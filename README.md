@@ -21,7 +21,7 @@ An all-in-one, real-time web dashboard and automated management suite for hostin
   - [1. Prerequisites](#1-prerequisites)
   - [2. Launch the Web Dashboard & Auto-Setup](#2-launch-the-web-dashboard--auto-setup)
   - [3. Configure Server Parameters via Web UI](#3-configure-server-parameters-via-web-ui)
-  - [4. Start Server & Connect](#4-start-server--connect)
+  - [4. Initialize Server & Connect](#4-initialize-server--connect)
 - [Using Custom & Existing Worlds](#using-custom--existing-worlds)
   - [Generating a New Realm with Custom or Random Seed](#generating-a-new-realm-with-custom-or-random-seed)
   - [Importing an Existing World (Single-Player or Previous Server)](#importing-an-existing-world-single-player-or-previous-server)
@@ -37,7 +37,7 @@ An all-in-one, real-time web dashboard and automated management suite for hostin
 ## Key Features
 
 ### Dedicated Server Process & Lifecycle Control
-- **1-Click Web Management**: Start, gracefully terminate, and reboot `valheim_server.exe` directly from any local browser.
+- **1-Click Web Management**: Initialize, gracefully terminate, and reboot `valheim_server.exe` directly from the Web HUD controls (**`[INITIALIZE]`**, **`[TERMINATE]`**, **`[REBOOT]`**).
 - **Dynamic Process Attachment**: Automatically discovers and attaches to existing running server instances by PID upon launch.
 - **Corruption-Free Shutdown**: Transmits graceful termination signals to ensure world database buffers flush to disk properly before the process exits.
 
@@ -123,13 +123,13 @@ Simply double-click **`start_dashboard.bat`**!
    - **World Preset & Modifiers**: Choose gameplay presets (*Default*, *Casual*, *Easy*, *Hard*, *Hardcore*, *Immersive*, or *Hammer* free-build mode) or set custom world modifiers.
    - **Network Ports**: Game UDP port (default `2456`) and Web Dashboard port (default `8085`).
    - **Auto-Save & Snapshots**: Set the auto-save frequency in seconds (default `1800`s / 30 min) and snapshot retention count.
-3. Click **SAVE CONFIGURATION** (or **INITIALIZE WORLD MATRIX** when creating a new realm). All changes are automatically synchronized and persisted to disk.
+3. Click **SAVE REALM CONFIG** (or **INITIALIZE WORLD MATRIX** when creating a new realm). All changes are automatically synchronized and persisted to disk.
 
 *(Optional / Headless: If hosting in a headless or automated CI environment without a browser, `server_config.example.json` can still be copied to `server_config.json` and edited manually).*
 
-### 4. Start Server & Connect
+### 4. Initialize Server & Connect
 
-1. Click the green **`[START SERVER]`** button in the Web Dashboard header.
+1. Click the green **`[INITIALIZE]`** button in the Web Dashboard header banner controls.
 2. Watch real-time multi-core CPU, RAM, and uptime telemetry stream live into your Cyber-HUD.
 3. Once the server registers with PlayFab, click the **Join Code** in the dashboard header to copy your 6-digit key and share it with your vikings!
 
@@ -178,7 +178,7 @@ If you already have a world with built bases, tamed boars, and exploration progr
    - *(Alternatively, you can set `"worldName": "<WorldName>"` in `server_config.json`).*
 
 4. **Launch the Server**:
-   - Click **Start Server** in the Web Dashboard (or run `start_server.bat`). The server will immediately load your existing world with all structures, items, and map exploration completely intact!
+   - Click the green **`[INITIALIZE]`** button in the Web Dashboard (or run `start_server.bat`). The server will immediately load your existing world with all structures, items, and map exploration completely intact!
 
 ---
 
@@ -242,7 +242,7 @@ valheim-server-dashboard/
 <details>
 <summary><b>How do I update Valheim when an official game patch is released?</b></summary>
 <br>
-<b>Stop the server from the dashboard, then run <code>./setup_server.ps1</code>. SteamCMD will validate existing files and download newly updated binaries automatically while preserving your worlds and settings.</b>
+<b>Stop the server from the dashboard (click <code>[TERMINATE]</code>), then run <code>./setup_server.ps1</code>. SteamCMD will validate existing files and download newly updated binaries automatically while preserving your worlds and settings.</b>
 </details>
 
 <details>
