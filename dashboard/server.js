@@ -230,11 +230,11 @@ function parseLogLine(line, isInitial = false) {
     if (state.errorList.length > 20) state.errorList.pop();
     pushActivity('error', 'Server Warning / Exception', errObj.message, 'error', isInitial);
     if (!isInitial) broadcastStatus();
-  } else if (/join code[^\d]*(\d{5,8})|Session ".*?" registered with join code\s+(\d+)|Created new join code\s+(\d+)/i.test(line)) {
+  } else if (!/Player (?:joined|connection lost)/i.test(line) && /(?:Session ".*?" registered with join code\s+(\d+)|Session ".*?" with join code\s+(\d+)\s+and IP|Created new join code\s+(\d+)|join code[:=\s]+(\d{5,8}))/i.test(line)) {
     category = 'code';
-    const match = line.match(/(?:join code[^\d]*(\d{5,8})|Session ".*?" registered with join code\s+(\d+)|Created new join code\s+(\d+))/i);
-    const extractedCode = match ? (match[1] || match[2] || match[3]) : null;
-    if (extractedCode) {
+    const match = line.match(/(?:Session ".*?" registered with join code\s+(\d+)|Session ".*?" with join code\s+(\d+)\s+and IP|Created new join code\s+(\d+)|join code[:=\s]+(\d{5,8}))/i);
+    const extractedCode = match ? (match[1] || match[2] || match[3] || match[4]) : null;
+    if (extractedCode && state.joinCode !== extractedCode) {
       state.joinCode = extractedCode;
       pushActivity('code', 'PlayFab Join Code Ready', `Crossplay join code: ${state.joinCode}`, 'code', isInitial);
       if (!isInitial) broadcastStatus();
@@ -274,14 +274,17 @@ function parseLogLine(line, isInitial = false) {
   } else if (/Player joined server.*now (\d+) player\(s\)/i.test(line)) {
     category = 'player';
     const match = line.match(/now (\d+) player\(s\)/i);
-    if (match) state.playerCount = parseInt(match[1], 10);
-    broadcastStatus();
+    if (match) {
+      state.playerCount = parseInt(match[1], 10);
+      if (!isInitial) broadcastStatus();
+    }
   } else if (/Got character ZDOID from (.*?) :\s*([-0-9]+:[-0-9]+)/i.test(line)) {
     const match = line.match(/Got character ZDOID from (.*?) :\s*([-0-9]+:[-0-9]+)/i);
     if (match) {
       const charName = match[1].trim();
       const zdoid = match[2].trim();
       const isZeroZdoid = (zdoid === '0:0' || zdoid === '0: 0');
+      const ownerId = (zdoid.includes(':') && zdoid !== '0:0' && zdoid !== '0: 0') ? zdoid.split(':')[0] : null;
       const targetWorld = (state.config && state.config.worldName) ? state.config.worldName : currentLogWorld;
 
       let existing = null;
@@ -324,8 +327,8 @@ function parseLogLine(line, isInitial = false) {
           }
 
           state.sessionCasualties = (state.sessionCasualties || 0) + 1;
-          pushActivity('death', `VIKING CASUALTY // ${charName} died`, 'Viking succumbed in the realm', 'error');
-          broadcastStatus();
+          pushActivity('death', `VIKING CASUALTY // ${charName} died`, 'Viking succumbed in the realm', 'error', isInitial);
+          if (!isInitial) broadcastStatus();
         } else {
           // INITIAL CONNECTION / PRE-SPAWN HANDSHAKE (NOT A DEATH)
           category = 'player';
@@ -336,7 +339,8 @@ function parseLogLine(line, isInitial = false) {
               joinedAt: new Date().toLocaleTimeString(),
               deaths: existing ? (existing.deaths || 0) : 0,
               hasSpawned: false,
-              currentZdoid: '0:0'
+              currentZdoid: '0:0',
+              ownerId: null
             });
             if (state.players.size > state.playerCount) {
               state.playerCount = state.players.size;
@@ -346,7 +350,7 @@ function parseLogLine(line, isInitial = false) {
             player.currentZdoid = '0:0';
           }
           // Do NOT increment sessionCasualties or player deaths!
-          broadcastStatus();
+          if (!isInitial) broadcastStatus();
         }
       } else {
         // NON-ZERO ZDOID: Player has spawned / materialized in the world!
@@ -362,7 +366,8 @@ function parseLogLine(line, isInitial = false) {
           joinedAt,
           deaths,
           hasSpawned: true,
-          currentZdoid: zdoid
+          currentZdoid: zdoid,
+          ownerId: ownerId || (player ? player.ownerId : null)
         });
 
         if (targetWorld && isWorldInitialized(targetWorld)) {
@@ -385,24 +390,62 @@ function parseLogLine(line, isInitial = false) {
         }
 
         if (!player) {
-          pushActivity('player', `${charName} arrived in Valheim`, 'Viking entered the realm', 'player');
+          pushActivity('player', `${charName} arrived in Valheim`, 'Viking entered the realm', 'player', isInitial);
         } else if (!wasSpawned) {
-          pushActivity('player', `${charName} materialized`, 'Viking spawned in the realm', 'player');
+          pushActivity('player', `${charName} materialized`, 'Viking spawned in the realm', 'player', isInitial);
         }
-        broadcastStatus();
+        if (!isInitial) broadcastStatus();
       }
     }
-  } else if (/Player connection lost.*now (\d+) player\(s\)/i.test(line) || /RPC_Disconnect/i.test(line)) {
+  } else if (/Destroying abandoned non persistent zdo .* owner ([-0-9]+)/i.test(line)) {
+    category = 'player';
+    const match = line.match(/Destroying abandoned non persistent zdo .* owner ([-0-9]+)/i);
+    if (match) {
+      const abandonedOwner = match[1];
+      for (const [name, p] of state.players.entries()) {
+        if (p.ownerId === abandonedOwner || (p.currentZdoid && p.currentZdoid.startsWith(abandonedOwner + ':'))) {
+          state.players.delete(name);
+          pushActivity('player', `${name} exited the realm`, 'Viking departed from Valheim', 'player', isInitial);
+          if (state.playerCount > state.players.size) {
+            state.playerCount = state.players.size;
+          }
+          if (!isInitial) broadcastStatus();
+          break;
+        }
+      }
+    }
+  } else if (/Player connection lost.*now (\d+) player\(s\)/i.test(line)) {
     category = 'player';
     const match = line.match(/now (\d+) player\(s\)/i);
     if (match) {
-      state.playerCount = Math.max(0, parseInt(match[1], 10));
-      if (state.playerCount === 0) {
-        state.players.clear();
+      const newCount = Math.max(0, parseInt(match[1], 10));
+      state.playerCount = newCount;
+      if (newCount === 0) {
+        if (state.players.size > 0) {
+          for (const [name] of state.players.entries()) {
+            pushActivity('player', `${name} exited the realm`, 'Viking departed from Valheim', 'player', isInitial);
+          }
+          state.players.clear();
+        }
+      } else if (state.players.size > newCount) {
+        // Prune unspawned ghost connections first if any
+        let pruned = false;
+        for (const [name, p] of state.players.entries()) {
+          if (!p.hasSpawned) {
+            state.players.delete(name);
+            pushActivity('player', `${name} disconnected`, 'Player left before spawning', 'player', isInitial);
+            pruned = true;
+            break;
+          }
+        }
+        if (!pruned) {
+          pushActivity('player', 'A Viking left the realm', `Active vikings remaining: ${newCount}`, 'player', isInitial);
+        }
       }
-      pushActivity('player', 'A Viking left the realm', `Active vikings remaining: ${state.playerCount}`, 'player');
-      broadcastStatus();
+      if (!isInitial) broadcastStatus();
     }
+  } else if (/RPC_Disconnect/i.test(line)) {
+    category = 'player';
   } else if (/World save \(5\/5\) done\. Total time \[(.*?)\]/i.test(line)) {
     category = 'save';
     const match = line.match(/done\. Total time \[(.*?)\]/i);
@@ -415,8 +458,8 @@ function parseLogLine(line, isInitial = false) {
       isBackup: false
     });
     if (state.saveHistory.length > 15) state.saveHistory.pop();
-    pushActivity('save', 'World Saved to Disk', `Save completed in ${state.lastSaveDuration}`, 'save');
-    broadcastStatus();
+    pushActivity('save', 'World Saved to Disk', `Save completed in ${state.lastSaveDuration}`, 'save', isInitial);
+    if (!isInitial) broadcastStatus();
   } else if (/World save \(1\/5\) .* => Save number (\d+)/i.test(line)) {
     const match = line.match(/Save number (\d+)/i);
     if (match) state.lastSaveNumber = match[1];
@@ -430,13 +473,16 @@ function parseLogLine(line, isInitial = false) {
       isBackup: true
     });
     if (state.saveHistory.length > 15) state.saveHistory.pop();
-    pushActivity('save', 'Auto Backup Snapshot Created', `Backup preserved in worlds_local`, 'save');
-    broadcastStatus();
+    pushActivity('save', 'Auto Backup Snapshot Created', `Backup preserved in worlds_local`, 'save', isInitial);
+    if (!isInitial) broadcastStatus();
   } else if (/### Save World Thread Started! ###/i.test(line)) {
     category = 'save';
   } else if (/Server has shut down|Net scene destroyed|ShutdownInProgress/i.test(line)) {
     category = 'event';
-    pushActivity('event', 'Server Process Stopped', 'The Valheim server has finished shutdown', 'event');
+    state.players.clear();
+    state.playerCount = 0;
+    pushActivity('event', 'Server Process Stopped', 'The Valheim server has finished shutdown', 'event', isInitial);
+    if (!isInitial) broadcastStatus();
   }
 
   return {
@@ -458,6 +504,7 @@ function broadcast(payload) {
 function broadcastStatus() {
   const config = loadConfig();
   const isRealmInit = isWorldInitialized(config.worldName);
+  const detectedCount = getDetectedWorldsCount();
   const isOnline = (state.status === 'online') && state.pid;
   const activeJoinCode = (isOnline && isRealmInit) ? state.joinCode : null;
   const payload = {
@@ -478,7 +525,8 @@ function broadcastStatus() {
       activityFeed: state.activityFeed,
       metrics: state.metrics,
       config,
-      isRealmInitialized: isRealmInit
+      isRealmInitialized: isRealmInit,
+      detectedWorldsCount: detectedCount
     }
   };
   broadcast(payload);
@@ -1689,7 +1737,40 @@ app.get('/api/worlds/local-client-detect', (req, res) => {
       try {
         const files = fs.readdirSync(candDir);
         for (const file of files) {
-          if (file.endsWith('.fwl') && !file.includes('backup')) {
+          if (file.includes('backup') || file.includes('cache') || file.includes('Cache') || file === 'steam_autocloud.vdf') continue;
+          const fullCandPath = path.join(candDir, file);
+          const stat = fs.statSync(fullCandPath);
+
+          if (stat.isDirectory()) {
+            const worldName = file;
+            if (seen.has(worldName.toLowerCase())) continue;
+            try {
+              const subfiles = fs.readdirSync(fullCandPath);
+              const hasWorldFiles = subfiles.some(f => f.endsWith('.fwl') || f.endsWith('.fwl2') || f.endsWith('.db') || f.endsWith('.db2') || f.endsWith('.chunk'));
+              if (!hasWorldFiles) continue;
+
+              seen.add(worldName.toLowerCase());
+              let seedName = 'Standard Seed';
+              const fwlFiles = subfiles.filter(f => f.endsWith('.fwl2') || f.endsWith('.fwl')).sort().reverse();
+              if (fwlFiles.length > 0) {
+                try {
+                  const meta = parseWorldFwl(fs.readFileSync(path.join(fullCandPath, fwlFiles[0])));
+                  if (meta && meta.seedName) seedName = meta.seedName;
+                } catch (e) {}
+              }
+
+              detected.push({
+                name: worldName,
+                sourceDir: candDir,
+                isDir: true,
+                hasDb: true,
+                hasFwl: true,
+                seedName,
+                size: getDirSize(fullCandPath),
+                modified: stat.mtime
+              });
+            } catch (e) {}
+          } else if (file.endsWith('.fwl')) {
             const worldName = path.basename(file, '.fwl');
             if (seen.has(worldName.toLowerCase())) continue;
             seen.add(worldName.toLowerCase());
@@ -1697,7 +1778,7 @@ app.get('/api/worlds/local-client-detect', (req, res) => {
             const fwlPath = path.join(candDir, file);
             const dbPath = path.join(candDir, `${worldName}.db`);
             const hasDb = fs.existsSync(dbPath);
-            const fwlStat = fs.statSync(fwlPath);
+            const fwlStat = stat;
             const dbStat = hasDb ? fs.statSync(dbPath) : null;
             const totalSize = fwlStat.size + (dbStat ? dbStat.size : 0);
 
@@ -1710,6 +1791,7 @@ app.get('/api/worlds/local-client-detect', (req, res) => {
             detected.push({
               name: worldName,
               sourceDir: candDir,
+              isDir: false,
               hasDb,
               hasFwl: true,
               seedName,
@@ -1752,22 +1834,25 @@ app.post('/api/worlds/import-local', (req, res) => {
       return res.status(404).json({ success: false, message: 'Local Valheim worlds folder not found.' });
     }
 
-    const srcFwl = path.join(searchDir, `${cleanName}.fwl`);
-    const srcDb = path.join(searchDir, `${cleanName}.db`);
-
-    if (!fs.existsSync(srcFwl)) {
-      return res.status(404).json({ success: false, message: `Source file ${cleanName}.fwl not found in local directory.` });
-    }
-
     const resolvedWorldsDir = path.resolve(WORLDS_DIR);
     if (!fs.existsSync(resolvedWorldsDir)) fs.mkdirSync(resolvedWorldsDir, { recursive: true });
 
-    const destFwl = path.join(resolvedWorldsDir, `${cleanName}.fwl`);
-    const destDb = path.join(resolvedWorldsDir, `${cleanName}.db`);
+    const srcDirWorld = path.join(searchDir, cleanName);
+    const srcFwl = path.join(searchDir, `${cleanName}.fwl`);
+    const srcDb = path.join(searchDir, `${cleanName}.db`);
 
-    fs.copyFileSync(srcFwl, destFwl);
-    if (fs.existsSync(srcDb)) {
-      fs.copyFileSync(srcDb, destDb);
+    if (fs.existsSync(srcDirWorld) && fs.statSync(srcDirWorld).isDirectory()) {
+      const destDirWorld = path.join(resolvedWorldsDir, cleanName);
+      fs.cpSync(srcDirWorld, destDirWorld, { recursive: true });
+    } else if (fs.existsSync(srcFwl)) {
+      const destFwl = path.join(resolvedWorldsDir, `${cleanName}.fwl`);
+      const destDb = path.join(resolvedWorldsDir, `${cleanName}.db`);
+      fs.copyFileSync(srcFwl, destFwl);
+      if (fs.existsSync(srcDb)) {
+        fs.copyFileSync(srcDb, destDb);
+      }
+    } else {
+      return res.status(404).json({ success: false, message: `Source files for "${cleanName}" not found in local directory.` });
     }
 
     const cleanPassword = (typeof password === 'string' && password.trim().length >= 5)
@@ -1941,6 +2026,7 @@ function getDirSize(dirPath) {
 wss.on('connection', (ws) => {
   const config = loadConfig();
   const isRealmInit = isWorldInitialized(config.worldName);
+  const detectedCount = getDetectedWorldsCount();
   const isOnline = (state.status === 'online') && state.pid;
   const activeJoinCode = (isOnline && isRealmInit) ? state.joinCode : null;
 
@@ -1965,6 +2051,7 @@ wss.on('connection', (ws) => {
         metrics: state.metrics,
         config,
         isRealmInitialized: isRealmInit,
+        detectedWorldsCount: detectedCount,
         history: logHistory.slice(-250)
       }
     })

@@ -405,6 +405,10 @@ function applyServerState(data) {
     ? data.detectedWorldsCount
     : (worldsCountPill ? parseInt(worldsCountPill.textContent, 10) || 0 : 0);
 
+  if (worldsCountPill && data.detectedWorldsCount !== undefined) {
+    worldsCountPill.textContent = data.detectedWorldsCount;
+  }
+
   const cleanWorld = (data.config && data.config.worldName ? data.config.worldName : '').trim();
   const isRealmInit = Boolean(
     data.isRealmInitialized !== undefined
@@ -413,18 +417,18 @@ function applyServerState(data) {
   );
 
   if (bannerNoRealm) {
-    if (detectedCount === 0) {
+    if (isRealmInit) {
+      bannerNoRealm.classList.add('hidden');
+    } else if (detectedCount === 0) {
       bannerNoRealm.classList.remove('hidden');
       if (bannerAlertEyebrow) bannerAlertEyebrow.textContent = '[STORAGE_SCAN // ZERO_WORLDS_DETECTED]';
       if (bannerAlertTitle) bannerAlertTitle.textContent = 'NO VALHEIM REALMS DETECTED IN ENGINE MATRIX';
       if (bannerAlertDesc) bannerAlertDesc.textContent = 'The dedicated server requires an active realm to generate terrain and accept players. Initialize a new realm or import an existing world to launch the server.';
-    } else if (!isRealmInit) {
+    } else {
       bannerNoRealm.classList.remove('hidden');
       if (bannerAlertEyebrow) bannerAlertEyebrow.textContent = '[MATRIX_ALERT // ACTIVE_REALM_UNBOUND]';
       if (bannerAlertTitle) bannerAlertTitle.textContent = 'ACTIVE REALM UNBOUND // SELECT OR CREATE REALM';
       if (bannerAlertDesc) bannerAlertDesc.textContent = `${detectedCount} realm(s) detected in storage, but none is currently bound to the server engine. Select an active realm or generate a new one.`;
-    } else {
-      bannerNoRealm.classList.add('hidden');
     }
   }
 
@@ -1929,9 +1933,21 @@ function showToast(message, type = 'info') {
   }, 3500);
 }
 
+// Polling fallback helper
+async function pollStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    applyServerState(data);
+  } catch (e) {
+    console.error('[SYS_ERR] Error polling status:', e);
+  }
+}
+
 // Initialize
 window.addEventListener('DOMContentLoaded', () => {
   startSystemClock();
   connectWebSocket();
   initFileUploadZone();
+  loadExistingWorldsList();
 });

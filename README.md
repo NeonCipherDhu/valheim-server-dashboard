@@ -1,9 +1,9 @@
 # Valheim Dedicated Server Dashboard & Automation Suite
 
-[![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20%7C%20Server-0078d7.svg?logo=windows&logoColor=white)](https://github.com/larkensalise-star/valheim-server-dashboard)
+[![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20%7C%20Server-0078d7.svg?logo=windows&logoColor=white)](https://github.com/NeonCipherDhu/valheim-server-dashboard)
 [![Node.js Version](https://img.shields.io/badge/Node.js-%3E%3D%2016.0.0-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![SteamCMD AppID](https://img.shields.io/badge/Valheim%20AppID-896660-1b2838.svg?logo=steam&logoColor=white)](https://steamdb.info/app/896660/)
-[![Crossplay Ready](https://img.shields.io/badge/Crossplay-Steam%20%7C%20Xbox%20%7C%20Game%20Pass-107c10.svg?logo=xbox&logoColor=white)](https://github.com/larkensalise-star/valheim-server-dashboard)
+[![Crossplay Ready](https://img.shields.io/badge/Crossplay-Steam%20%7C%20Xbox%20%7C%20Game%20Pass-107c10.svg?logo=xbox&logoColor=white)](https://github.com/NeonCipherDhu/valheim-server-dashboard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 An all-in-one, real-time web dashboard and automated management suite for hosting, monitoring, and operating a **Valheim Dedicated Server** on Windows. Engineered with a **Tactical Operations Cyber-HUD** interface, this suite provides live CPU core and RAM telemetry, automated PlayFab crossplay join code extraction, engine-level player death tracking, world save diagnostics, manual backup snapshots, and seamless process lifecycle control.
@@ -19,9 +19,9 @@ An all-in-one, real-time web dashboard and automated management suite for hostin
 - [Feature Comparison Matrix](#feature-comparison-matrix)
 - [Quick Start Guide](#quick-start-guide)
   - [1. Prerequisites](#1-prerequisites)
-  - [2. Download & Automated Server Installation via SteamCMD](#2-download--automated-server-installation-via-steamcmd)
-  - [3. Configure Server Parameters](#3-configure-server-parameters)
-  - [4. Launch the Web Dashboard](#4-launch-the-web-dashboard-zero-window-silent-mode)
+  - [2. Launch the Web Dashboard & Auto-Setup](#2-launch-the-web-dashboard--auto-setup)
+  - [3. Configure Server Parameters via Web UI](#3-configure-server-parameters-via-web-ui)
+  - [4. Start Server & Connect](#4-start-server--connect)
 - [Using Custom & Existing Worlds](#using-custom--existing-worlds)
   - [Generating a New Realm with Custom or Random Seed](#generating-a-new-realm-with-custom-or-random-seed)
   - [Importing an Existing World (Single-Player or Previous Server)](#importing-an-existing-world-single-player-or-previous-server)
@@ -91,47 +91,47 @@ An all-in-one, real-time web dashboard and automated management suite for hostin
 - **PowerShell**: PowerShell 5.1 (standard Windows built-in) or PowerShell 7+.
 - **Node.js**: Version 16.0.0 or newer ([Download Node.js LTS](https://nodejs.org/)).
 
-### 2. Automated Server Installation & Smart Launcher
+### 2. Launch the Web Dashboard & Auto-Setup
 
 Simply double-click **`start_dashboard.bat`**!
 
-> **Smart Self-Bootstrapping Engine:**
-> `start_dashboard.bat` automatically verifies your environment. If **SteamCMD** or the official **Valheim Dedicated Server** app (AppID `896660`) is not yet installed, it automatically downloads and installs them for you. Once all dependencies are satisfied, future launches skip installation in milliseconds and start the dashboard immediately!
-
-*(Optional: You can also run `.\setup_server.ps1` in PowerShell at any time if you prefer to manually install or update the server files independently).*
-
-### 3. Configure Server Parameters
-Copy the template configuration file (in PowerShell run the command below, or simply duplicate and rename `server_config.example.json` to `server_config.json` in Windows File Explorer):
-```powershell
-cp server_config.example.json server_config.json
-```
-Edit `server_config.json` with your desired server name and password:
-```json
-{
-  "serverName": "My_Valheim_Realm",
-  "worldName": "DedicatedWorld",
-  "serverPassword": "SecretPassword123",
-  "serverPort": 2456,
-  "dashboardPort": 8085,
-  "isPublic": 1,
-  "crossplay": true,
-  "saveInterval": 1800,
-  "backups": 4
-}
-```
-
-### 4. Launch the Web Dashboard (Zero-Window Silent Mode)
-Double-click **`start_dashboard.bat`**.
-
-- **No lingering terminal window**: The dashboard starts silently in the background with zero command prompt / PowerShell clutter.
-- **Auto-Browser Open**: Opens your default browser directly to `http://localhost:8085`.
-- **Stopping the Dashboard**:
-  - **Option 1 (In-Browser)**: Click the red **`[EXIT]`** button in the top-right header of the web dashboard.
-  - **Option 2 (Desktop)**: Double-click **`stop_dashboard.bat`**.
+- **Smart Self-Bootstrapping Engine**: Automatically verifies your environment on initial launch. If **SteamCMD** or the official **Valheim Dedicated Server** app (AppID `896660`) is not yet installed, it automatically downloads and installs them for you. Once all dependencies are satisfied, future launches skip installation in milliseconds and start the dashboard immediately.
+- **Zero-Window Silent Mode**: The dashboard runs silently in the background with zero command prompt or PowerShell window clutter.
+- **Auto-Browser Open**: Automatically launches your default web browser directly to `http://localhost:8085`.
 - **Developer / Console Debug Mode**: If you ever want to see raw live Node.js logs in a visible terminal window, run:
   ```powershell
   .\start_dashboard.bat /console
   ```
+- **Stopping the Dashboard**:
+  - **In-Browser**: Click the red **`[EXIT]`** button in the top-right header of the web dashboard.
+  - **Desktop**: Double-click **`stop_dashboard.bat`**.
+
+*(Optional: You can also run `.\setup_server.ps1` in PowerShell at any time if you prefer to manually install or update the server files independently).*
+
+### 3. Configure Server Parameters via Web UI
+
+> **All configurations are directly available in the Web UI!**  
+> There is no need to manually copy or edit config files. The web dashboard provides an interactive configuration center with live validation and automatic persistence.
+
+1. Open the dashboard at `http://localhost:8085` and click the **`[SETTINGS]`** button in the top navigation bar (or click **`[CONFIG]`** next to any detected realm).
+2. Configure all your server and realm parameters directly from the interface:
+   - **Server Name**: Custom title displayed in the server browser or Discord status (e.g. `AMABOYS_DServer`).
+   - **Realm Password**: Access password (minimum 5 characters). Click the **`GEN`** key button to automatically generate a secure alphanumeric password.
+   - **Active Realm / World**: Select any detected realm, generate a new procedural world with custom seeds and gameplay presets, or import an existing world.
+   - **Crossplay (PlayFab)**: Toggle Crossplay on to generate automatic 6-digit join codes for Steam, Xbox One, Xbox Series X|S, and PC Game Pass cross-platform play.
+   - **Community Server**: Toggle whether your realm is publicly discoverable in the global Valheim community list.
+   - **World Preset & Modifiers**: Choose gameplay presets (*Default*, *Casual*, *Easy*, *Hard*, *Hardcore*, *Immersive*, or *Hammer* free-build mode) or set custom world modifiers.
+   - **Network Ports**: Game UDP port (default `2456`) and Web Dashboard port (default `8085`).
+   - **Auto-Save & Snapshots**: Set the auto-save frequency in seconds (default `1800`s / 30 min) and snapshot retention count.
+3. Click **SAVE CONFIGURATION** (or **INITIALIZE WORLD MATRIX** when creating a new realm). All changes are automatically synchronized and persisted to disk.
+
+*(Optional / Headless: If hosting in a headless or automated CI environment without a browser, `server_config.example.json` can still be copied to `server_config.json` and edited manually).*
+
+### 4. Start Server & Connect
+
+1. Click the green **`[START SERVER]`** button in the Web Dashboard header.
+2. Watch real-time multi-core CPU, RAM, and uptime telemetry stream live into your Cyber-HUD.
+3. Once the server registers with PlayFab, click the **Join Code** in the dashboard header to copy your 6-digit key and share it with your vikings!
 
 ---
 
@@ -173,11 +173,9 @@ If you already have a world with built bases, tamed boars, and exploration progr
          └── <WorldName>.fwl
      ```
 
-3. **Set the World Name in Settings**:
-   - In `server_config.json` (or via the dashboard **[SETTINGS]** modal), set `"worldName"` to your world's name (without the `.db` or `.fwl` extension):
-     ```json
-     "worldName": "<WorldName>"
-     ```
+3. **Activate Your World in the Web Dashboard**:
+   - In the Web Dashboard, open **`[SETTINGS]`** &rarr; **Detected Worlds**, where your imported realm will automatically appear. Click **`ACTIVATE`** (or **`[CONFIG]`** to adjust passwords, ports, and presets).
+   - *(Alternatively, you can set `"worldName": "<WorldName>"` in `server_config.json`).*
 
 4. **Launch the Server**:
    - Click **Start Server** in the Web Dashboard (or run `start_server.bat`). The server will immediately load your existing world with all structures, items, and map exploration completely intact!
@@ -226,13 +224,13 @@ valheim-server-dashboard/
 <details>
 <summary><b>Can I bring my existing single-player world or a world from another server?</b></summary>
 <br>
-<b>Yes, absolutely!</b> Valheim world saves are 100% portable. Copy your <code>&lt;WorldName&gt;.db</code> and <code>&lt;WorldName&gt;.fwl</code> files from your personal saves folder (<code>%USERPROFILE%\AppData\LocalLow\IronGate\Valheim\worlds_local</code>) into this project's <code>worlds_local/</code> folder, then update <code>"worldName": "&lt;WorldName&gt;"</code> in <code>server_config.json</code> or the Web Dashboard Settings menu. All buildings, chests, and world progress will load seamlessly.
+<b>Yes, absolutely!</b> Valheim world saves are 100% portable. Copy your <code>&lt;WorldName&gt;.db</code> and <code>&lt;WorldName&gt;.fwl</code> files from your personal saves folder (<code>%USERPROFILE%\AppData\LocalLow\IronGate\Valheim\worlds_local</code>) into this project's <code>worlds_local/</code> folder (or use the <b>IMPORT REALM</b> drag-and-drop tool in the Web Dashboard), then activate it in the Web Dashboard Settings menu. All buildings, chests, and world progress will load seamlessly.
 </details>
 
 <details>
 <summary><b>Can friends join without port forwarding?</b></summary>
 <br>
-<b>Yes.</b> When <code>"crossplay": true</code> is set in <code>server_config.json</code>, the Valheim server establishes a tunnel via Microsoft PlayFab. The dashboard captures the 6-digit join code, which players on Steam, Xbox, and PC Game Pass can use to connect directly without router adjustments.
+<b>Yes.</b> When Crossplay is enabled in the Web Dashboard Settings (or <code>"crossplay": true</code> in <code>server_config.json</code>), the Valheim server establishes a tunnel via Microsoft PlayFab. The dashboard captures the 6-digit join code, which players on Steam, Xbox, and PC Game Pass can use to connect directly without router adjustments.
 </details>
 
 <details>
