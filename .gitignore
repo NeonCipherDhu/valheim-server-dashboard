@@ -1,0 +1,29 @@
+# =========================================================
+# VALHEIM DEDICATED SERVER & HUD - .gitignore
+# =========================================================
+
+# 1. World Saves & Player Databases (STRICT PRIVACY: Never commit personal worlds)
+worlds_local/
+*.db
+*.fwl
+*.old
+
+# 2. Game Server Binaries & Unity Engine (Installed/updated via setup_server.ps1)
+server/
+steamcmd/
+cache/
+
+# 3. Runtime Logs & Diagnostics
+server.log
+*.log
+
+# 4. Node.js Dashboard Dependencies
+node_modules/
+dashboard/node_modules/
+
+# 5. Local Server Configuration & Passwords
+server_config.json
+
+# 6. Operating System Files
+.DS_Store
+Thumbs.db

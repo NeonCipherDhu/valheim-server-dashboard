@@ -1,0 +1,13 @@
+{
+  "serverName": "My_Valheim_Server",
+  "worldName": "DedicatedWorld",
+  "serverPassword": "change_me_12345",
+  "serverPort": 2456,
+  "dashboardPort": 8085,
+  "isPublic": 1,
+  "crossplay": true,
+  "saveInterval": 1800,
+  "backups": 4,
+  "preset": "",
+  "modifier": ""
+}

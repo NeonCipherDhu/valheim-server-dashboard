@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALHEIM // TACTICAL OPERATIONS HUD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,500;0,600;0,700;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=10">
+</head>
+<body class="cyber-theme">
+  <!-- Scanline & Ambient HUD Grid Effects -->
+  <div class="cyber-scanlines" aria-hidden="true"></div>
+  <div class="cyber-grid" aria-hidden="true"></div>
+  <div class="glow-orb glow-matrix" aria-hidden="true"></div>
+  <div class="glow-orb glow-cyan" aria-hidden="true"></div>
+  <div class="glow-orb glow-crimson" aria-hidden="true"></div>
+
+  <div class="app-container">
+    <!-- Top Cyber Header Navigation -->
+    <header class="navbar hud-border">
+      <div class="nav-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          <span class="icon-pulse"></span>
+        </div>
+        <div class="brand-text" id="brand-text-container" title="Click to view & select realms in [REALMS]">
+          <div class="brand-eyebrow">
+            <span class="hud-tag" id="brand-eyebrow-tag">ACTIVE_REALM // <span id="brand-realm-tag">AMABOYS</span></span>
+            <span class="hud-status-chip chip-active" id="brand-realm-chip">REALM_BOUND</span>
+          </div>
+          <h1 id="brand-title">AMABOYS</h1>
+          <span class="subtitle" id="brand-subtitle">HOSTING: <strong id="brand-server-name">AMABOYS_DServer</strong> // TACTICAL HUD v2.4</span>
+        </div>
+      </div>
+
+      <!-- Real-time HUD Ticker -->
+      <div class="header-status-group">
+        <div class="sys-clock-pill" id="sys-clock-container" title="System Matrix Clock">
+          <span class="clock-label">SYS_UTC:</span>
+          <span class="clock-val" id="sys-clock-val">00:00:00</span>
+        </div>
+
+        <div class="status-badge status-offline" id="server-status-badge">
+          <span class="pulse-dot"></span>
+          <span class="status-label" id="server-status-text">OFFLINE</span>
+        </div>
+
+        <div class="meta-pill uptime-pill" id="uptime-container" title="Server Uptime">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span class="pill-label">UPTIME</span>
+          <span id="uptime-val">--:--:--</span>
+        </div>
+
+        <div class="nav-actions">
+          <button class="cyber-btn-ghost icon-btn" id="btn-open-settings" title="Server Operations & Settings Hub">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>[SETTINGS]</span>
+          </button>
+          <button class="cyber-btn-ghost icon-btn btn-exit-nav" id="btn-exit-dashboard" title="Shut Down Dashboard Background Service">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+              <line x1="12" y1="2" x2="12" y2="12"></line>
+            </svg>
+            <span>[EXIT]</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Controls Banner & Tactical Telemetry -->
+    <section class="glass-card hud-card controls-banner">
+      <div class="corner-bracket corner-tl"></div>
+      <div class="corner-bracket corner-tr"></div>
+      <div class="corner-bracket corner-bl"></div>
+      <div class="corner-bracket corner-br"></div>
+
+      <div class="banner-left">
+        <div class="realm-identity">
+          <span class="realm-tag"><span class="tag-prefix">WORLD:</span> <strong id="detail-world-name">AMABOYS</strong></span>
+          <span class="realm-port"><span class="tag-prefix">PORT:</span> <strong id="detail-port">UDP 2456</strong></span>
+          <span class="pid-tag" id="server-pid-tag">PID: --</span>
+          <span class="protocol-tag">[PROTO: IPv4/CROSSPLAY]</span>
+        </div>
+        
+        <div class="action-buttons-group">
+          <button class="cyber-btn btn-start" id="btn-start-server">
+            <span class="btn-glitch-layer" aria-hidden="true"></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>INITIALIZE</span>
+          </button>
+
+          <button class="cyber-btn btn-stop" id="btn-stop-server" disabled>
+            <span class="btn-glitch-layer" aria-hidden="true"></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="5" y="5" width="14" height="14" rx="2"></rect>
+            </svg>
+            <span>TERMINATE</span>
+          </button>
+
+          <button class="cyber-btn btn-restart" id="btn-restart-server" disabled>
+            <span class="btn-glitch-layer" aria-hidden="true"></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M23 4v6h-6"></path>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            <span>REBOOT</span>
+          </button>
+
+          <button class="cyber-btn btn-backup" id="btn-quick-backup">
+            <span class="btn-glitch-layer" aria-hidden="true"></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>SNAPSHOT</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="banner-right">
+        <!-- CPU Gauge -->
+        <div class="telemetry-box">
+          <div class="telemetry-header">
+            <div class="telemetry-title">
+              <svg class="meter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="16" height="16" x="4" y="4" rx="2"/>
+                <rect width="6" height="6" x="9" y="9" rx="1"/>
+                <path d="M15 2v2"/>
+                <path d="M15 20v2"/>
+                <path d="M2 15h2"/>
+                <path d="M2 9h2"/>
+                <path d="M20 15h2"/>
+                <path d="M20 9h2"/>
+                <path d="M9 2v2"/>
+                <path d="M9 20v2"/>
+              </svg>
+              <span>CPU_LOAD</span>
+            </div>
+            <strong class="digital-metric" id="metric-cpu">0.0%</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill cpu-fill" id="cpu-bar" style="width: 0%"></div>
+            <div class="segmented-grid"></div>
+          </div>
+        </div>
+
+        <!-- RAM Gauge -->
+        <div class="telemetry-box">
+          <div class="telemetry-header">
+            <div class="telemetry-title">
+              <svg class="meter-icon meter-icon-ram" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 19v-3"/>
+                <path d="M10 19v-3"/>
+                <path d="M14 19v-3"/>
+                <path d="M18 19v-3"/>
+                <rect width="20" height="12" x="2" y="4" rx="2"/>
+              </svg>
+              <span>RAM_ALLOC</span>
+            </div>
+            <strong class="digital-metric" id="metric-ram">0 MB</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill ram-fill" id="ram-bar" style="width: 0%"></div>
+            <div class="segmented-grid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- UNBOUND / NO REALM WARNING BANNER -->
+    <div class="cyber-alert-banner hidden" id="banner-no-realm">
+      <div class="alert-banner-glow"></div>
+      <div class="alert-banner-inner">
+        <div class="alert-banner-left">
+          <div class="alert-banner-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div class="alert-banner-text">
+            <div class="alert-banner-eyebrow" id="banner-alert-eyebrow">[STORAGE_SCAN // ZERO_WORLDS_DETECTED]</div>
+            <h4 class="alert-banner-title" id="banner-alert-title">NO VALHEIM REALMS DETECTED IN ENGINE MATRIX</h4>
+            <p class="alert-banner-desc" id="banner-alert-desc">The dedicated server requires an active realm to generate terrain and accept players. Initialize a new realm or import an existing world to launch the server.</p>
+          </div>
+        </div>
+        <div class="alert-banner-actions">
+          <button type="button" class="cyber-btn btn-primary btn-sm" id="btn-banner-create-world">
+            <span class="btn-glitch-layer" aria-hidden="true"></span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>INITIALIZE NEW REALM</span>
+          </button>
+          <button type="button" class="cyber-btn-ghost btn-sm" id="btn-banner-import-world">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>IMPORT EXISTING REALM</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 MAIN TACTICAL HUD CARDS -->
+    <main class="cards-grid">
+      
+      <!-- CARD 1: VIKINGS / WARRIOR ROSTER -->
+      <section class="glass-card hud-card feature-card card-vikings">
+        <div class="card-edge-glow"></div>
+        <div class="feature-header">
+          <div class="feature-title-group">
+            <div class="feature-icon icon-green">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="feature-eyebrow">[UNIT_TRACKER // ACTIVE]</div>
+              <h3>Vikings in Realm</h3>
+            </div>
+          </div>
+          <div class="viking-header-badges">
+            <div class="combat-tally-pill" title="Total Viking Casualties / Deaths in Current Session">
+              <svg class="tally-icon-skull" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="12" r="1"/>
+                <circle cx="15" cy="12" r="1"/>
+                <path d="M8 20v2h8v-2"/>
+                <path d="m12.5 17-.5-1-.5 1h1z"/>
+                <path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/>
+              </svg>
+              <span class="badge-prefix">DEATHS:</span>
+              <span id="metric-session-deaths">0</span>
+              <button type="button" class="tally-reset-btn" id="btn-reset-deaths" title="Reset Session Deaths to 0" aria-label="Reset Deaths">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                  <path d="M21 3v5h-5"/>
+                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                  <path d="M3 21v-5h5"/>
+                </svg>
+              </button>
+            </div>
+            <div class="count-badge" id="badge-viking-count">
+              <span class="badge-prefix">ONLINE:</span>
+              <span id="metric-player-count">0</span> / 10
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Players Container -->
+        <div class="viking-section">
+          <div class="section-label-cyber">
+            <span>CONNECTED COMBATANTS</span>
+            <span class="label-line"></span>
+          </div>
+          <div class="viking-roster" id="active-vikings-list">
+            <div class="empty-state">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 15h8"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+              <span>NO WARRIOR SIGNALS DETECTED IN REALM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historical Players -->
+        <div class="viking-section viking-archive-section">
+          <div class="section-label-cyber">
+            <span>KNOWN CLAN ARCHIVES</span>
+            <span class="label-line"></span>
+          </div>
+          <div class="viking-chips-wrap" id="history-vikings-list">
+            <span class="viking-chip-empty">No warriors have visited this realm yet...</span>
+          </div>
+          <div class="combat-telemetry-meta">
+            <span class="telemetry-live-dot"></span>
+            <span>REAL-TIME DEATH DETECTOR ACTIVE (ZDO: 0:0)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 2: WORLD SAVES & SNAPSHOT CHRONICLE (Right Row 1) -->
+      <section class="glass-card hud-card feature-card card-saves">
+        <div class="card-edge-glow"></div>
+        <div class="feature-header">
+          <div class="feature-title-group">
+            <div class="feature-icon icon-purple">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="M3 5V19A9 3 0 0 0 21 19V5"/>
+                <path d="M3 12A9 3 0 0 0 21 12"/>
+              </svg>
+            </div>
+            <div>
+              <div class="feature-eyebrow">[STORAGE // WORLDS_LOCAL]</div>
+              <h3>World DB & Checkpoints</h3>
+            </div>
+          </div>
+          <div class="world-card-top-actions">
+            <button class="cyber-btn-ghost icon-btn btn-xs" id="btn-quick-new-world" title="Create New World with Custom or Random Seed">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>NEW REALM</span>
+            </button>
+            <div class="save-state-pill" id="badge-last-save">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span id="metric-save-time">No saves yet</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="save-metrics-row">
+          <div class="save-stat-box">
+            <span class="stat-title">LAST_SYNC_DUR</span>
+            <span class="stat-number" id="save-duration-val">-- ms</span>
+          </div>
+          <div class="save-stat-box">
+            <span class="stat-title">AUTO_SAVE_INT</span>
+            <span class="stat-number" id="save-interval-val">30 mins</span>
+          </div>
+          <div class="save-stat-box">
+            <span class="stat-title">RETAINED_SETS</span>
+            <span class="stat-number" id="save-backups-val">4</span>
+          </div>
+        </div>
+
+        <div class="saves-history-container">
+          <div class="section-label-cyber">
+            <span>HISTORICAL CHECKPOINTS</span>
+            <span class="label-line"></span>
+          </div>
+          <div class="saves-list" id="recent-saves-list">
+            <div class="empty-state-sm">No world saves recorded during this session.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 3: PLAYFAB JOIN CODE & NETWORK GATEWAY (Right Row 2) -->
+      <section class="glass-card hud-card feature-card card-join-code">
+        <div class="card-edge-glow"></div>
+        <div class="feature-header">
+          <div class="feature-title-group">
+            <div class="feature-icon icon-cyan">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/>
+                <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>
+              </svg>
+            </div>
+            <div>
+              <div class="feature-eyebrow">[PLAYFAB_GATEWAY // CROSSPLAY]</div>
+              <h3>Access Join Token &amp; Key</h3>
+            </div>
+          </div>
+          <span class="join-status-badge" id="join-status-label">OFFLINE</span>
+        </div>
+
+        <!-- Unbound Realm Notice (Displayed when no realm is initialized yet) -->
+        <div class="credentials-unbound-box hidden" id="credentials-unbound-box">
+          <div class="unbound-icon-pill">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <div class="unbound-content">
+            <strong class="unbound-heading">[CREDENTIALS // UNBOUND]</strong>
+            <p class="unbound-desc">No active realm is initialized. Access token and password will become available once a realm is created or activated.</p>
+            <button type="button" class="cyber-btn-ghost btn-xs btn-open-realms-unbound" id="btn-unbound-open-realms">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              <span>CONFIGURE REALM IN [SETTINGS]</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Credentials Active Container -->
+        <div class="credentials-active-container hidden" id="credentials-active-container">
+          <!-- High-Tech Decrypted Token Display -->
+          <div class="join-code-hero" id="hero-join-token">
+            <div class="token-container">
+              <span class="token-label">DECRYPTION_KEY</span>
+              <div class="code-value-display" id="join-code-display">------</div>
+              <div class="token-sub-status" id="token-sub-status">Server offline. Start server to generate code.</div>
+            </div>
+            <button class="cyber-btn btn-copy" id="btn-copy-code" disabled>
+              <span class="btn-glitch-layer" aria-hidden="true"></span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+              </svg>
+              <span>COPY TOKEN</span>
+            </button>
+          </div>
+
+          <!-- Realm Security Password Display -->
+          <div class="join-code-hero password-hero" id="hero-realm-password">
+            <div class="token-container">
+              <span class="token-label">REALM_PASSWORD</span>
+              <div class="password-display-wrapper">
+                <div class="code-value-display password-val" id="realm-pwd-display">••••••••</div>
+                <button type="button" class="btn-toggle-pwd" id="btn-toggle-card-pwd" title="Reveal / Conceal Password">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+              <div class="token-sub-status" id="pwd-sub-status">Required for clients authenticating into this realm</div>
+            </div>
+            <button class="cyber-btn btn-copy" id="btn-copy-password">
+              <span class="btn-glitch-layer" aria-hidden="true"></span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+              </svg>
+              <span>COPY PASS</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="network-specs">
+          <div class="spec-row">
+            <span class="spec-name"><span class="spec-bullet">&gt;</span> CROSSPLAY LINK</span>
+            <span class="spec-val spec-green" id="spec-crossplay">Enabled (PlayFab Party)</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-name"><span class="spec-bullet">&gt;</span> UDP PORT RANGE</span>
+            <span class="spec-val">2456 - 2457</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-name"><span class="spec-bullet">&gt;</span> COMMUNITY BROADCAST</span>
+            <span class="spec-val" id="spec-public">Visible in Community List</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 4: REALM HEALTH & ERROR DIAGNOSTICS -->
+      <section class="glass-card hud-card feature-card card-health">
+        <div class="card-edge-glow"></div>
+        <div class="feature-header">
+          <div class="feature-title-group">
+            <div class="feature-icon icon-cyan" id="health-status-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+            </div>
+            <div>
+              <div class="feature-eyebrow">[HEALTH_FEED // TELEMETRY]</div>
+              <h3>Diagnostics & Telemetry</h3>
+            </div>
+          </div>
+          <span class="health-pill health-nominal" id="health-pill-badge">
+            <span class="pulse-dot"></span> ALL_SYSTEMS_NOMINAL
+          </span>
+        </div>
+
+        <!-- Anomaly Banner -->
+        <div class="anomaly-banner hidden" id="anomaly-alert-box">
+          <div class="anomaly-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div class="anomaly-content">
+            <strong id="anomaly-title">SYS_WARNING DETECTED</strong>
+            <p id="anomaly-desc">Exception detected in game engine.</p>
+          </div>
+          <button type="button" class="cyber-btn-ghost btn-xs btn-resolve-anomaly" id="btn-resolve-anomaly" title="Acknowledge &amp; Resolve Alert">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>RESOLVE</span>
+          </button>
+        </div>
+
+        <!-- Live Activity Feed -->
+        <div class="activity-section">
+          <div class="section-label-cyber">
+            <span>LIVE CHRONICLE FEED</span>
+            <span class="label-line"></span>
+          </div>
+          <div class="activity-feed" id="activity-feed-list">
+            <div class="activity-item event-neutral">
+              <span class="activity-dot"></span>
+              <div class="activity-text">
+                <div class="activity-main">Valheim Realm Portal Initialized</div>
+                <div class="activity-time">Just now</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Hacker Terminal Console Drawer -->
+    <section class="raw-logs-collapse glass-card hud-card">
+      <button class="collapse-toggle" id="btn-toggle-raw-logs">
+        <div class="toggle-title">
+          <svg class="terminal-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"/>
+            <line x1="12" x2="20" y1="19" y2="19"/>
+          </svg>
+          <span>CONSOLE_TERMINAL // ENGINE_STDOUT</span>
+          <span class="terminal-badge">INTERACTIVE</span>
+        </div>
+        <span class="toggle-arrow" id="raw-logs-arrow">▲</span>
+      </button>
+
+      <div class="raw-logs-body" id="raw-logs-container">
+        <div class="terminal-header-bar">
+          <div class="terminal-circles">
+            <span class="t-circle t-red"></span>
+            <span class="t-circle t-yellow"></span>
+            <span class="t-circle t-green"></span>
+          </div>
+          <div class="terminal-title">valheim@odin-node: /proc/sys/server.out</div>
+        </div>
+        <div class="raw-logs-viewport" id="raw-logs-viewport">
+          <div class="log-line">[SYS_INIT] Terminal stream ready. Waiting for log payload...</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Unified Settings & Operations Hub Modal -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-card hud-card modal-settings-card">
+      <div class="corner-bracket corner-tl"></div>
+      <div class="corner-bracket corner-tr"></div>
+      <div class="corner-bracket corner-bl"></div>
+      <div class="corner-bracket corner-br"></div>
+      
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-eyebrow">[OPERATIONS // CONTROL_CENTER]</span>
+          <h2>SETTINGS &amp; REALM_OPERATIONS</h2>
+        </div>
+        <button class="btn-close" id="btn-close-settings" title="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/>
+            <path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Top Primary Settings Navigation Tabs -->
+      <div class="settings-tabs-bar">
+        <button type="button" class="tab-btn active" id="tab-btn-settings-realms">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>REALMS &amp; WORLDS</span>
+        </button>
+        <button type="button" class="tab-btn" id="tab-btn-settings-snapshots">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>SNAPSHOTS</span>
+        </button>
+      </div>
+
+      <!-- PRIMARY TAB 1: REALMS & WORLDS -->
+      <div class="settings-tab-panel" id="panel-settings-realms">
+        <div class="worlds-tabs-bar" id="worlds-subtabs-bar">
+          <button type="button" class="tab-btn active" id="tab-btn-list-worlds">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>DETECTED WORLDS (<span id="worlds-count-pill">0</span>)</span>
+          </button>
+          <button type="button" class="tab-btn" id="tab-btn-create-world">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>GENERATE NEW REALM</span>
+          </button>
+          <button type="button" class="tab-btn" id="tab-btn-import-world">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>IMPORT REALM</span>
+          </button>
+        </div>
+
+        <!-- Subpanel 1: Existing Worlds List (Default) -->
+        <div class="world-tab-content" id="panel-list-worlds">
+          <div class="existing-worlds-list" id="existing-worlds-container">
+            <div class="empty-list">Scanning worlds_local...</div>
+          </div>
+        </div>
+
+        <!-- Subpanel 2: Create Realm Form -->
+        <div class="world-tab-content hidden" id="panel-create-world">
+          <form id="form-create-world" class="settings-grid">
+            <div class="form-group">
+              <label for="world-gen-name"><span class="input-bullet">&gt;</span> REALM_NAME (LETTERS, NUMBERS, UNDERSCORES)</label>
+              <input type="text" id="world-gen-name" name="worldName" placeholder="e.g. OdinValhalla" required spellcheck="false">
+            </div>
+
+            <div class="form-group">
+              <label for="world-gen-password"><span class="input-bullet">&gt;</span> REALM_PASSWORD (MIN 5 CHARS)</label>
+              <div class="seed-input-row">
+                <input type="text" id="world-gen-password" name="password" minlength="5" placeholder="Enter password (min 5 chars) or click GEN KEY" required spellcheck="false">
+                <button type="button" class="cyber-btn btn-roll" id="btn-roll-password" title="Generate Random Password">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="7.5" cy="15.5" r="5.5"></circle>
+                    <path d="m21 2-9.6 9.6"></path>
+                    <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path>
+                  </svg>
+                  <span>GEN KEY</span>
+                </button>
+              </div>
+              <div class="field-hint" style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.35rem;">
+                Valheim requires a password with at least 5 characters for player access.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="world-gen-seed"><span class="input-bullet">&gt;</span> WORLD_SEED (CUSTOM SEED STRING OR CLICK ROLL)</label>
+              <div class="seed-input-row">
+                <input type="text" id="world-gen-seed" name="seed" placeholder="Type custom seed or click Roll..." spellcheck="false">
+                <button type="button" class="cyber-btn btn-roll" id="btn-roll-seed" title="Generate Random Viking Seed">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                    <path d="M8 8h.01"></path>
+                    <path d="M12 12h.01"></path>
+                    <path d="M16 16h.01"></path>
+                    <path d="M16 8h.01"></path>
+                    <path d="M8 16h.01"></path>
+                  </svg>
+                  <span>ROLL SEED</span>
+                </button>
+              </div>
+              <div class="seed-preview-bar">
+                <span class="seed-stat-label">&gt; STABLE_SEED_HASH:</span>
+                <span class="seed-hash-val" id="seed-hash-display">Awaiting input...</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="world-gen-preset"><span class="input-bullet">&gt;</span> WORLD_PRESET (GAMEPLAY RULES)</label>
+              <select id="world-gen-preset" name="preset" class="cyber-select">
+                <option value="">default — Standard Valheim experience</option>
+                <option value="casual">casual — No raids, keep items on death, lenient portals</option>
+                <option value="easy">easy — Reduced combat damage &amp; slower enemy attacks</option>
+                <option value="hard">hard — Increased enemy damage &amp; spawn rates</option>
+                <option value="hardcore">hardcore — Permadeath, gear destroyed, no map/portals</option>
+                <option value="immersive">immersive — No map &amp; no portals (pure orienteering)</option>
+                <option value="hammer">hammer — Free build mode, all crafting recipes open</option>
+              </select>
+            </div>
+
+            <div class="form-group toggle-group cyber-toggle-box">
+              <label for="world-gen-crossplay"><span class="input-bullet">&gt;</span> CROSSPLAY ENABLED (PLAYFAB JOIN KEY)</label>
+              <input type="checkbox" id="world-gen-crossplay" name="crossplay" checked>
+            </div>
+
+            <div class="form-group toggle-group cyber-toggle-box">
+              <label for="world-gen-active"><span class="input-bullet">&gt;</span> SET AS ACTIVE SERVER REALM</label>
+              <input type="checkbox" id="world-gen-active" name="setAsActive" checked>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="cyber-btn-ghost btn btn-secondary" id="btn-cancel-world">ABORT</button>
+              <button type="submit" class="cyber-btn btn-primary" id="btn-submit-world">
+                <span>INITIALIZE WORLD MATRIX</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Subpanel 4: Import Realm -->
+        <div class="world-tab-content hidden" id="panel-import-world">
+          <div class="import-sections-wrapper">
+            
+            <!-- SECTION 1: Local PC Valheim Worlds Auto-Discovery -->
+            <div class="import-section-card">
+              <div class="import-section-header">
+                <div class="import-badge">[AUTO_DISCOVERY // HOST_CLIENT]</div>
+                <h4>Detected Local Client Worlds (This PC)</h4>
+                <p>Instantly clone worlds from your personal singleplayer or co-op saves into this dedicated server.</p>
+              </div>
+              <div class="local-worlds-list" id="local-client-worlds-list">
+                <div class="empty-list">Scanning local Valheim client directories...</div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: Drag & Drop / Upload .fwl & .db -->
+            <div class="import-section-card">
+              <div class="import-section-header">
+                <div class="import-badge">[FILE_UPLOAD // DIRECT_STREAM]</div>
+                <h4>Upload World Files (.fwl + .db)</h4>
+                <p>Transfer world files from another server, cloud drive, or backup archive.</p>
+              </div>
+              <div class="import-upload-container">
+                <div class="drop-zone" id="world-drop-zone">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <p class="drop-zone-prompt">Drag &amp; drop <strong>.fwl</strong> and <strong>.db</strong> files here, or <span class="browse-link">Browse Files</span></p>
+                  <span class="drop-zone-sub">Supported formats: &lt;world&gt;.fwl and &lt;world&gt;.db</span>
+                  <input type="file" id="file-upload-input" multiple accept=".fwl,.db" style="display: none;">
+                </div>
+                <div class="uploaded-files-preview hidden" id="uploaded-files-preview">
+                  <div class="preview-files-list" id="preview-files-list"></div>
+                  <div class="upload-options-row">
+                    <div class="form-group" style="flex: 1;">
+                      <label for="import-custom-password"><span class="input-bullet">&gt;</span> REALM PASSWORD (MIN 5 CHARS)</label>
+                      <input type="text" id="import-custom-password" value="amaboys" minlength="5" spellcheck="false">
+                    </div>
+                    <div class="form-group toggle-group cyber-toggle-box" style="margin-bottom: 0;">
+                      <label for="import-set-active"><span class="input-bullet">&gt;</span> SET AS ACTIVE REALM</label>
+                      <input type="checkbox" id="import-set-active" checked>
+                    </div>
+                  </div>
+                  <div class="upload-actions-bar">
+                    <button type="button" class="cyber-btn-ghost btn-xs" id="btn-clear-upload-files">CLEAR</button>
+                    <button type="button" class="cyber-btn btn-primary" id="btn-submit-world-upload">
+                      <span>MOUNT &amp; INITIALIZE UPLOADED REALM</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: Manual Folder Shortcut -->
+            <div class="import-section-card manual-card">
+              <div class="import-section-header">
+                <div class="import-badge">[MANUAL_FOLDER // STORAGE_MOUNT]</div>
+                <h4>Manual Server Worlds Folder</h4>
+                <p>You can also directly drop any Valheim world folder or <code>.fwl/.db</code> files into the server's local worlds directory.</p>
+              </div>
+              <div class="manual-path-box">
+                <code id="server-worlds-dir-display">.\worlds_local</code>
+                <div class="manual-path-actions">
+                  <button type="button" class="cyber-btn-ghost btn-xs" id="btn-copy-worlds-path" title="Copy Worlds Folder Path">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                    <span>COPY PATH</span>
+                  </button>
+                  <button type="button" class="cyber-btn-ghost btn-xs" id="btn-rescan-imported-worlds" title="Rescan Worlds Directory">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                    <span>RESCAN MATRIX</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Subpanel 3: Realm Configuration Form (Tied to Realm via [CONFIG]) -->
+        <div class="world-tab-content hidden" id="panel-config-world">
+          <div class="realm-config-header">
+            <button type="button" class="cyber-btn-ghost btn-back-to-worlds" id="btn-back-to-worlds" title="Return to Detected Worlds List">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span>&lt; BACK TO WORLDS</span>
+            </button>
+            <div class="realm-config-title-group">
+              <span class="cfg-target-eyebrow">[REALM CONFIGURATION]</span>
+              <h3 class="cfg-target-title" id="cfg-target-realm-header">AMABOYS</h3>
+            </div>
+            <div class="cfg-realm-status-badge active" id="cfg-active-tag">
+              <span class="pulse-dot"></span> ACTIVE REALM
+            </div>
+          </div>
+
+          <form id="form-settings" class="settings-grid">
+            <input type="hidden" id="cfg-worldName" name="worldName">
+            <input type="hidden" id="cfg-world-select" name="targetWorld">
+
+            <div class="form-group">
+              <label for="cfg-serverName"><span class="input-bullet">&gt;</span> SERVER_NAME (HOSTED TITLE FOR THIS REALM)</label>
+              <input type="text" id="cfg-serverName" name="serverName" required spellcheck="false">
+            </div>
+
+            <div class="form-group">
+              <label for="cfg-password"><span class="input-bullet">&gt;</span> REALM_PASSWORD (MIN 5 CHARS)</label>
+              <div class="seed-input-row">
+                <input type="text" id="cfg-password" name="serverPassword" minlength="5" required spellcheck="false">
+                <button type="button" class="cyber-btn btn-roll" id="btn-roll-cfg-password" title="Generate Random Password">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="7.5" cy="15.5" r="5.5"></circle>
+                    <path d="m21 2-9.6 9.6"></path>
+                    <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path>
+                  </svg>
+                  <span>GEN</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group toggle-group cyber-toggle-box">
+              <label for="cfg-makeActive"><span class="input-bullet">&gt;</span> ACTIVATE THIS REALM ON SERVER START</label>
+              <input type="checkbox" id="cfg-makeActive" name="makeActive" checked>
+            </div>
+
+            <div class="form-group">
+              <label for="cfg-preset"><span class="input-bullet">&gt;</span> REALM_PRESET (GAMEPLAY RULES)</label>
+              <select id="cfg-preset" name="preset" class="cyber-select">
+                <option value="">default — Standard Valheim experience</option>
+                <option value="casual">casual — No raids, keep items on death, lenient portals</option>
+                <option value="easy">easy — Reduced combat damage &amp; slower enemy attacks</option>
+                <option value="hard">hard — Increased enemy damage &amp; spawn rates</option>
+                <option value="hardcore">hardcore — Permadeath, gear destroyed, no map/portals</option>
+                <option value="immersive">immersive — No map &amp; no portals (pure orienteering)</option>
+                <option value="hammer">hammer — Free build mode, all crafting recipes open</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="cfg-modifier"><span class="input-bullet">&gt;</span> CUSTOM MODIFIERS</label>
+              <input type="text" id="cfg-modifier" name="modifier" placeholder="raids=none, portals=all...">
+            </div>
+
+            <div class="form-group">
+              <label for="cfg-port"><span class="input-bullet">&gt;</span> SERVER_PORT (GAME UDP)</label>
+              <input type="number" id="cfg-port" name="serverPort" value="2456" required>
+            </div>
+
+            <div class="form-group">
+              <label for="cfg-dashboardPort"><span class="input-bullet">&gt;</span> DASHBOARD_PORT (WEB HTTP)</label>
+              <input type="number" id="cfg-dashboardPort" name="dashboardPort" value="8085" required>
+            </div>
+
+            <div class="form-group toggle-group cyber-toggle-box">
+              <label for="cfg-crossplay"><span class="input-bullet">&gt;</span> CROSSPLAY (PLAYFAB PARTY)</label>
+              <input type="checkbox" id="cfg-crossplay" name="crossplay" checked>
+            </div>
+
+            <div class="form-group toggle-group cyber-toggle-box">
+              <label for="cfg-isPublic"><span class="input-bullet">&gt;</span> COMMUNITY SERVER (PUBLIC LIST)</label>
+              <input type="checkbox" id="cfg-isPublic" name="isPublic">
+            </div>
+
+            <div class="form-group">
+              <label for="cfg-saveInterval"><span class="input-bullet">&gt;</span> AUTO-SAVE INTERVAL (SEC)</label>
+              <input type="number" id="cfg-saveInterval" name="saveInterval" value="1800">
+            </div>
+
+            <div class="form-group">
+              <label for="cfg-backups"><span class="input-bullet">&gt;</span> SNAPSHOTS TO RETAIN</label>
+              <input type="number" id="cfg-backups" name="backups" value="4">
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="cyber-btn-ghost btn btn-secondary" id="btn-cancel-settings">&lt; BACK TO WORLDS</button>
+              <button type="submit" class="cyber-btn btn-primary">SAVE REALM CONFIG</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- PRIMARY TAB 2: SNAPSHOTS -->
+      <div class="settings-tab-panel hidden" id="panel-settings-snapshots">
+        <div class="backups-toolbar">
+          <p class="text-sm">Manage and restore timestamped archive packages of your world database.</p>
+          <button class="cyber-btn btn-backup" id="btn-create-backup-modal">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>EXECUTE_SNAPSHOT</span>
+          </button>
+        </div>
+
+        <div class="backups-list" id="backups-list-container">
+          <div class="empty-list">Loading world archives...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tactical Cyber Confirmation Modal -->
+  <div class="modal-overlay" id="modal-confirm" style="z-index: 2500;">
+    <div class="glass-card hud-card modal-card modal-confirm-card">
+      <div class="corner-bracket corner-tl"></div>
+      <div class="corner-bracket corner-tr"></div>
+      <div class="corner-bracket corner-bl"></div>
+      <div class="corner-bracket corner-br"></div>
+
+      <div class="modal-header confirm-header">
+        <div class="modal-title-group">
+          <span class="modal-eyebrow" id="confirm-eyebrow">[SECURITY_OVERRIDE // EXEC_CONFIRM]</span>
+          <h2 id="confirm-title">CONFIRM ACTION</h2>
+        </div>
+        <button class="btn-close" id="btn-close-confirm" title="Cancel">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/>
+            <path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="confirm-body">
+        <div class="confirm-icon-box danger" id="confirm-icon-box">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="confirm-text-group">
+          <p class="confirm-message" id="confirm-message">Are you sure you want to proceed?</p>
+          <p class="confirm-subtext" id="confirm-subtext"></p>
+        </div>
+      </div>
+
+      <div class="modal-footer confirm-footer">
+        <button type="button" class="cyber-btn-ghost btn btn-secondary" id="btn-cancel-confirm">ABORT</button>
+        <button type="button" class="cyber-btn btn-danger" id="btn-ok-confirm">CONFIRM EXECUTION</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <script src="app.js?v=23"></script>
+</body>
+</html>
